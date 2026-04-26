@@ -1,0 +1,6 @@
+Total iterations:  100	-	E.R.C.:	0.13300
+Total iterations:  200	-	E.R.C.:	0.13070
+Total iterations:  500	-	E.R.C.:	0.13128
+Total iterations: 1000	-	E.R.C.:	0.13402
+Total iterations: 2000	-	E.R.C.:	0.13530
+Total iterations: 5000	-	E.R.C.:	0.13524
