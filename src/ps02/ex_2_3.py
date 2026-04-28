@@ -5,6 +5,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import mean_squared_error
 import os
+os.makedirs("results", exist_ok=True)
 filename = os.path.splitext(os.path.basename(__file__))[0]
 
 
@@ -66,16 +67,16 @@ best_loss_nu  = float(np.inf)
 # uniform
 for deg in fit_degrees:
     
-    poly_u = make_pipeline(
+    model_u = make_pipeline(
         PolynomialFeatures(degree=deg),
         LinearRegression()
     )
-    poly_u.fit(X_train, y_train_u)
-    y_pred_u = poly_u.predict(X_train)
+    model_u.fit(X_train, y_train_u)
+    y_pred_u = model_u.predict(X_train)
     train_loss_u = mean_squared_error(y_train_u, y_pred_u)
     loss_train_u.append(train_loss_u)
     risk_u.append(train_loss_u + lambda_reg * deg)
-    y_test_pred_u = poly_u.predict(X_test)
+    y_test_pred_u = model_u.predict(X_test)
     loss_test_u.append(mean_squared_error(y_test_u, y_test_pred_u))
 
 
@@ -84,16 +85,16 @@ sigma = err_params[1] * (1 + X_train.flatten()**2)
 weights = 1 / sigma**2
 for deg in fit_degrees:
 
-    poly_nu = make_pipeline(
+    model_nu = make_pipeline(
         PolynomialFeatures(degree=deg),
         LinearRegression()
     )
-    poly_nu.fit(X_train, y_train_nu, linearregression__sample_weight=weights)
-    y_pred_nu = poly_nu.predict(X_train)
+    model_nu.fit(X_train, y_train_nu, linearregression__sample_weight=weights)
+    y_pred_nu = model_nu.predict(X_train)
     train_loss_nu = mean_squared_error(y_train_nu, y_pred_nu)
     loss_train_nu.append(train_loss_nu)
     risk_nu.append(train_loss_nu + lambda_reg * deg)
-    y_test_pred_nu = poly_nu.predict(X_test)
+    y_test_pred_nu = model_nu.predict(X_test)
     loss_test_nu.append(mean_squared_error(y_test_nu, y_test_pred_nu))
 
 

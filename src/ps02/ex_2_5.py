@@ -5,6 +5,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold, LeaveOneOut, train_test_split
 import logging
 import os
+os.makedirs("results", exist_ok=True)
 filename = os.path.splitext(os.path.basename(__file__))[0]
 
 logging.basicConfig(
@@ -22,7 +23,7 @@ k_neighbors_max = 21
 k_folds = [5, 7, 10]
 n_try = 50
 
-neigh = np.arange(1, k_neighbors_max)
+neighbors = np.arange(1, k_neighbors_max)
 
 def polynomial_func(X, coeffs):
     f = 0
@@ -62,9 +63,9 @@ for i in range(n_try):
 
     y_true = polynomial_func(X_test, func_params)
 
-    for neig in range(1, k_neighbors_max):
+    for neigh in range(1, k_neighbors_max):
 
-        knn = KNeighborsRegressor(neig)
+        knn = KNeighborsRegressor(neigh)
         knn.fit(X_train, y_train)
         y_pred = knn.predict(X_train)
         train_loss = mean_squared_error(y_train, y_pred)
@@ -72,9 +73,9 @@ for i in range(n_try):
         test_loss = mean_squared_error(y_test, y_test_pred)
         theoretical_loss = mean_squared_error(y_true, y_test_pred)
 
-        LOSS_TRAIN_HOLDOUT[neig-1, i] = train_loss
-        LOSS_TEST_HOLDOUT[neig-1, i]  = test_loss
-        LOSS_TRUE_HOLDOUT[neig-1, i]  = theoretical_loss
+        LOSS_TRAIN_HOLDOUT[neigh-1, i] = train_loss
+        LOSS_TEST_HOLDOUT[neigh-1, i]  = test_loss
+        LOSS_TRUE_HOLDOUT[neigh-1, i]  = theoretical_loss
     
     if i % 10 == 0:
         logger.info(f"Hold out: {i+1} / {n_try} done.")
@@ -88,10 +89,10 @@ true_std_holdout   = np.std(LOSS_TRUE_HOLDOUT,   axis=1)
 
 plt.figure(figsize=(10, 6))
 for i in range(n_try):
-    plt.plot(neigh, LOSS_TRAIN_HOLDOUT[:, i], c="b", ls="-",  alpha=0.05)
-    plt.plot(neigh, LOSS_TEST_HOLDOUT[:, i],  c="r", ls="--", alpha=0.05)
-plt.plot(neigh, train_mean_holdout, c="b", ls="-",  label=f"train (mean={train_mean_holdout[-1]:.4f}; std={train_std_holdout[-1]:.4f})")
-plt.plot(neigh, test_mean_holdout,  c="r", ls="--", label=f"test (mean={test_mean_holdout[-1]:.4f}; std={test_std_holdout[-1]:.4f})")
+    plt.plot(neighbors, LOSS_TRAIN_HOLDOUT[:, i], c="b", ls="-",  alpha=0.05)
+    plt.plot(neighbors, LOSS_TEST_HOLDOUT[:, i],  c="r", ls="--", alpha=0.05)
+plt.plot(neighbors, train_mean_holdout, c="b", ls="-",  label=f"train (mean={train_mean_holdout[-1]:.4f}; std={train_std_holdout[-1]:.4f})")
+plt.plot(neighbors, test_mean_holdout,  c="r", ls="--", label=f"test (mean={test_mean_holdout[-1]:.4f}; std={test_std_holdout[-1]:.4f})")
 plt.xlabel("k")
 plt.ylabel("loss")
 plt.yscale("log")
@@ -121,7 +122,7 @@ for k in k_folds:
 
         kfold = KFold(n_splits=k, shuffle=shuffle, random_state=SEED)
         
-        for neig in range(1, k_neighbors_max):
+        for neigh in range(1, k_neighbors_max):
 
             train_losses = []
             test_losses = []
@@ -136,7 +137,7 @@ for k in k_folds:
 
                 y_true = polynomial_func(X_test, func_params)
 
-                knn = KNeighborsRegressor(neig)
+                knn = KNeighborsRegressor(neigh)
                 knn.fit(X_train, y_train)
                 y_pred = knn.predict(X_train)
                 train_losses.append(mean_squared_error(y_train, y_pred))
@@ -144,9 +145,9 @@ for k in k_folds:
                 test_losses.append(mean_squared_error(y_test, y_test_pred))
                 theoretical_losses.append(mean_squared_error(y_true, y_test_pred))
 
-            LOSS_TRAIN_K_FOLD[k][neig-1, i] = np.mean(train_losses)
-            LOSS_TEST_K_FOLD[k][neig-1, i]  = np.mean(test_losses)
-            LOSS_TRUE_K_FOLD[k][neig-1, i]  = np.mean(theoretical_losses)
+            LOSS_TRAIN_K_FOLD[k][neigh-1, i] = np.mean(train_losses)
+            LOSS_TEST_K_FOLD[k][neigh-1, i]  = np.mean(test_losses)
+            LOSS_TRUE_K_FOLD[k][neigh-1, i]  = np.mean(theoretical_losses)
     
         if i % 10 == 0:
             logger.info(f"{k}-fold: {i+1} / {n_try} done.")
@@ -160,10 +161,10 @@ for k in k_folds:
 
     plt.figure(figsize=(10, 6))
     for i in range(n_try):
-        plt.plot(neigh, LOSS_TRAIN_K_FOLD[k][:, i], c="b", ls="-",  alpha=0.05)
-        plt.plot(neigh, LOSS_TEST_K_FOLD[k][:, i],  c="r", ls="--", alpha=0.05)
-    plt.plot(neigh, train_mean_k_fold[k], c="b", ls="-",  label=f"train (mean={train_mean_k_fold[k][-1]:.4f}; std={train_std_k_fold[k][-1]:.4f})")
-    plt.plot(neigh, test_mean_k_fold[k],  c="r", ls="--", label=f"test (mean={test_mean_k_fold[k][-1]:.4f}; std={test_std_k_fold[k][-1]:.4f})")
+        plt.plot(neighbors, LOSS_TRAIN_K_FOLD[k][:, i], c="b", ls="-",  alpha=0.05)
+        plt.plot(neighbors, LOSS_TEST_K_FOLD[k][:, i],  c="r", ls="--", alpha=0.05)
+    plt.plot(neighbors, train_mean_k_fold[k], c="b", ls="-",  label=f"train (mean={train_mean_k_fold[k][-1]:.4f}; std={train_std_k_fold[k][-1]:.4f})")
+    plt.plot(neighbors, test_mean_k_fold[k],  c="r", ls="--", label=f"test (mean={test_mean_k_fold[k][-1]:.4f}; std={test_std_k_fold[k][-1]:.4f})")
     plt.xlabel("k")
     plt.ylabel("loss")
     plt.yscale("log")
@@ -184,7 +185,7 @@ for i in range(n_try):
 
     loo = LeaveOneOut()
     
-    for neig in range(1, k_neighbors_max):
+    for neigh in range(1, k_neighbors_max):
 
         train_losses = []
         test_losses = []
@@ -199,7 +200,7 @@ for i in range(n_try):
 
             y_true = polynomial_func(X_test, func_params)
 
-            knn = KNeighborsRegressor(neig)
+            knn = KNeighborsRegressor(neigh)
             knn.fit(X_train, y_train)
             y_pred = knn.predict(X_train)
             train_losses.append(mean_squared_error(y_train, y_pred))
@@ -207,9 +208,9 @@ for i in range(n_try):
             test_losses.append(mean_squared_error(y_test, y_test_pred))
             theoretical_losses.append(mean_squared_error(y_true, y_test_pred))
 
-        LOSS_TRAIN_LOO[neig-1, i] = np.mean(train_losses)
-        LOSS_TEST_LOO[neig-1, i]  = np.mean(test_losses)
-        LOSS_TRUE_LOO[neig-1, i]  = np.mean(theoretical_losses)
+        LOSS_TRAIN_LOO[neigh-1, i] = np.mean(train_losses)
+        LOSS_TEST_LOO[neigh-1, i]  = np.mean(test_losses)
+        LOSS_TRUE_LOO[neigh-1, i]  = np.mean(theoretical_losses)
     
     if i % 10 == 0:
         logger.info(f"LOO: {i+1} / {n_try} done.")
@@ -223,10 +224,10 @@ true_std_loo   = np.std(LOSS_TRUE_LOO, axis=1)
 
 plt.figure(figsize=(10, 6))
 for i in range(n_try):
-    plt.plot(neigh, LOSS_TRAIN_LOO[:, i], c="b", ls="-",  alpha=0.05)
-    plt.plot(neigh, LOSS_TEST_LOO[:, i],  c="r", ls="--", alpha=0.05)
-plt.plot(neigh, train_mean_loo, c="b", ls="-",  label=f"train (mean={train_mean_loo[-1]:.4f}; std={train_std_loo[-1]:.4f})")
-plt.plot(neigh, test_mean_loo,  c="r", ls="--", label=f"test (mean={test_mean_loo[-1]:.4f}; std={test_std_loo[-1]:.4f})")
+    plt.plot(neighbors, LOSS_TRAIN_LOO[:, i], c="b", ls="-",  alpha=0.05)
+    plt.plot(neighbors, LOSS_TEST_LOO[:, i],  c="r", ls="--", alpha=0.05)
+plt.plot(neighbors, train_mean_loo, c="b", ls="-",  label=f"train (mean={train_mean_loo[-1]:.4f}; std={train_std_loo[-1]:.4f})")
+plt.plot(neighbors, test_mean_loo,  c="r", ls="--", label=f"test (mean={test_mean_loo[-1]:.4f}; std={test_std_loo[-1]:.4f})")
 plt.xlabel("k")
 plt.ylabel("loss")
 plt.yscale("log")
@@ -255,16 +256,31 @@ print("LOO:\n"
 
 
 
-plt.figure(figsize=(10, 6))
-plt.plot(neigh, true_mean_holdout, label=f"Hold Out (mean={true_mean_holdout[-1]:.4f}; {true_std_holdout[-1]:.4f})")
-for k in k_folds:
-    plt.plot(neigh, true_mean_k_fold[k], label=f"{k} Fold (mean={true_mean_k_fold[k][-1]:.4f}; {true_std_k_fold[k][-1]:.4f})")
-plt.plot(neigh, true_mean_loo, label=f"LOO (mean={true_mean_loo[-1]:.4f}; std={true_std_loo[-1]:.4f})")
-plt.xlabel("k")
-plt.ylabel("loss")
-plt.yscale("log")
-plt.title(f"True Loss")
-plt.legend()
+fig = plt.figure(figsize=(18, 10))
+gs = fig.add_gridspec(2, 3)
+
+ax0 = fig.add_subplot(gs[0, 0])
+ax0.plot(neighbors, true_mean_holdout, c="r", label=f"Holdout (mean)")
+ax0.fill_between(neighbors, true_mean_holdout - true_std_holdout, true_mean_holdout + true_std_holdout, color="r", alpha=0.2)
+ax0.set_title("Holdout")
+ax0.set_yscale("log")
+ax0.legend()
+
+ax1 = fig.add_subplot(gs[0, 1:3])
+ax1.plot(neighbors, true_mean_loo, c="g", label=f"LOO (mean)")
+ax1.fill_between(neighbors, true_mean_loo - true_std_loo, true_mean_loo + true_std_loo, color="g", alpha=0.2)
+ax1.set_title("Leave-One-Out")
+ax1.set_yscale("log")
+ax1.legend()
+
+for i, k in enumerate(k_folds):
+    ax = fig.add_subplot(gs[1, i])
+    ax.plot( neighbors, true_mean_k_fold[k], label=f"{k}-Fold (mean)")
+    ax.fill_between( neighbors, true_mean_k_fold[k] - true_std_k_fold[k], true_mean_k_fold[k] + true_std_k_fold[k], alpha=0.2)
+    ax.set_title(f"{k}-Fold")
+    ax.set_yscale("log")
+    ax.legend()
+
 plt.tight_layout()
 plt.savefig(f"results/{filename}_true_error.pdf")
 plt.show()

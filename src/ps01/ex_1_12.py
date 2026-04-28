@@ -3,6 +3,8 @@ Empirical Rademacher Complexity     C(H) = E(sup 1/n sum(sigma*h))
 '''
 from sklearn import datasets
 import numpy as np
+import os
+os.makedirs("results", exist_ok=True)
 
 iris = datasets.load_iris()
 X = iris.data[:, 1]
